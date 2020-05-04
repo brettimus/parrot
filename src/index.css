@@ -5,9 +5,20 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  background-color: #3B1C32;
+  color: #cecece;
 }
 
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+/*
+CA054D - pictorial carmine
+3B1C32 - dark purple
+A4D4B4 - turquoise green
+FFCF9C - light orange
+B96D40 - brown sugar
+*/
