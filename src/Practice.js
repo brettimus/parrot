@@ -10,7 +10,6 @@ const Attempt = ({ timestamp, blob, blobURL, remove }) => {
   useEffect(() => {
     if (!srcMemo.current) {
       const funUrl = URL.createObjectURL(blob)
-      console.log('yo?', funUrl)
       srcMemo.current = funUrl
       setMeh(meh => meh + 1);
     }
@@ -20,7 +19,6 @@ const Attempt = ({ timestamp, blob, blobURL, remove }) => {
       }
     }
   }, [blob, blobURL, srcMemo])
-  console.log('srcMemo.current', srcMemo.current)
   return (
     <React.Fragment>
       <div>{formatRelative(new Date(timestamp), new Date())}</div>
@@ -30,7 +28,7 @@ const Attempt = ({ timestamp, blob, blobURL, remove }) => {
   );
 };
 
-export const Mic = (props) => {
+export const Mimics = (props) => {
   const [loading, setLoading] = useState(false);
   const [recording, setRecording] = useState(false);
   const [lastTry, setLastTry] = useState(null);
@@ -82,6 +80,7 @@ export const Mic = (props) => {
 
   return (
     <div>
+      <h2>Mimics</h2>
       <ReactMic
         record={recording}
         className="sound-wave"
@@ -96,20 +95,20 @@ export const Mic = (props) => {
         lastTry && (
           <React.Fragment>
             <hr />
-            <p>Last try:</p>
+            <p>Last Mimic:</p>
             <Attempt {...lastTry} remove={() => setLastTry(null)} />
             <button onClick={saveLastTry} type="button">Save</button>
           </React.Fragment>
         )
       }
-      <div style={{ marginTop: '4em' }}/>
+      <div style={{ marginTop: '3em' }}/>
       {
         loading && <p>Loading your practice clips...</p>
       }
       {
         !loading && (
           <React.Fragment>
-            <p>All Yo Attempts</p>
+            <p>Ye Olde Mimickse</p>
             <button onClick={deleteAll} type="button">Delete All</button>
             <ul>
               {history.map((h, i) => {
@@ -131,3 +130,63 @@ export const Mic = (props) => {
     </div>
   );
 }
+
+export const Preview = () => {
+  const [sample, setSample] = useState(null);
+  const setSampleWrapper = React.useCallback(newSample => {
+    return setSample({
+      ...newSample,
+      src: URL.createObjectURL(newSample.blob)
+    })
+  }, [setSample])
+  useEffect(() => {
+    api.loadMedia().then(thing => {
+      if (thing) {
+        setSampleWrapper(thing)
+      }
+    })
+  }, [setSampleWrapper])
+
+  if (sample) {
+    return (
+      <div>
+        <h2>Okay Try Mimicing This or Whatever</h2>
+        <audio controls src={sample.src} />
+      </div>
+    );
+  }
+
+  const onInputChange = (event) => {
+    const file = event.target.files[0]; 
+    const toCommit = {
+      title: file.name || 'untitled',
+      description: 'TODO',
+      blob: file,
+    }
+    api.saveMedia(toCommit).then(id => {
+      setSampleWrapper({
+        ...toCommit,
+        id
+      });      
+    })
+  }
+  return (
+    <div>
+      <h2>Upload a File You Can Mimic</h2>
+      <input id="sample" name="sample" type="file" onChange={onInputChange} style={{ width: '180px' }} />
+    </div>
+  );
+}
+
+export const Practice = () => {
+  return (
+    <React.Fragment>
+      <div style={{ padding: '2em' }}>
+        <Preview />
+      </div>
+      <Mimics />
+    </React.Fragment>
+  );
+};
+
+export default Practice;

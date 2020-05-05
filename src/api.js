@@ -1,11 +1,40 @@
 import Dexie from 'dexie';
 
-const db = new Dexie("ParrotDatabase");
-db.version(1).stores({ mimics: "++id,timestamp,blob" });
+global.Dexie = Dexie;
+global.startOver = () => Dexie.delete("ParrotDatabase")
 
-export const loadMimics = () => new Promise((res, rej) => {
+const db = new Dexie("ParrotDatabase");
+db.version(1).stores({
+  mimics: "++id,timestamp,mediaId",
+  media: "++id,title,description",
+});
+
+export const loadMedia = () => {
+  return db.transaction('r', db.media, async () => {
+    const samples = await db.media.toArray();
+    return samples[0];
+  });
+}
+
+export const saveMedia = ({ blob, title, description }) => {
+  return db.transaction('rw', db.media, async () => {
+    const id = await db.media.add({ title, description, blob });
+    console.debug(`Added media with id ${id}`, { title, description, blob });
+    return id;
+  });
+}
+
+export const loadMimics = (mediaId) => new Promise((res, rej) => {
   db.transaction('r', db.mimics, async () => {
-    const allRecordings = await db.mimics.where("timestamp").below(new Date()).toArray();
+    const getAll = () => {
+      let recs = db.mimics.where("timestamp").below(new Date());
+      if (mediaId) {
+        recs = recs.and().where("mediaId").equals(mediaId);
+      }
+      return recs.toArray();
+    };
+
+    const allRecordings = await getAll();
     console.debug("My recordings", allRecordings);
     res(allRecordings);
   }).catch(e => {
@@ -14,12 +43,12 @@ export const loadMimics = () => new Promise((res, rej) => {
   });
 });
 
-export const addMimic = (micData) => {
+export const addMimic = (micData, mediaId) => {
   const { blob, timestamp } = micData;
   console.log('Adding mic data...', micData, { blob, timestamp })
   return db.transaction('rw', db.mimics, async () => {
     const id = await db.mimics.add({ timestamp, blob });
-    alert (`Added mimic with id ${id}`);
+    return id;
   }).catch(e => {
       alert(e.stack || e);
   });

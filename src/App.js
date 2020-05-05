@@ -1,5 +1,5 @@
 import React from 'react';
-import { Mic } from './Mic';
+import Practice from './Practice';
 import './App.css';
 
 
@@ -7,13 +7,9 @@ function App() {
   return (
     <div className="App">
       <header className="App-header">
-        <p>
-          Ciao
-        </p>
+        <span role="img" aria-label="parrot emoji">🦜</span>
       </header>
-      <div>
-        <Mic />
-      </div>
+      <Practice />
     </div>
   );
 }
