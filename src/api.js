@@ -9,10 +9,17 @@ db.version(1).stores({
   media: "++id,title,description",
 });
 
-export const loadMedia = () => {
+export const loadAllMedia = () => {
   return db.transaction('r', db.media, async () => {
     const samples = await db.media.toArray();
-    return samples[0];
+    return samples;
+  });
+}
+
+
+export const loadOneMedia = (id) => {
+  return db.transaction('r', db.media, async () => {
+    return db.media.get({ id: +id });
   });
 }
 
@@ -27,11 +34,10 @@ export const saveMedia = ({ blob, title, description }) => {
 export const loadMimics = (mediaId) => new Promise((res, rej) => {
   db.transaction('r', db.mimics, async () => {
     const getAll = () => {
-      let recs = db.mimics.where("timestamp").below(new Date());
-      if (mediaId) {
-        recs = recs.and().where("mediaId").equals(mediaId);
+      if (!mediaId) {
+        return db.mimics.where("timestamp").below(new Date()).toArray();
       }
-      return recs.toArray();
+      return db.mimics.where("mediaId").equals(mediaId).toArray();
     };
 
     const allRecordings = await getAll();

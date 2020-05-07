@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react'
+import { useRouteMatch } from 'react-router-dom';
 import { ReactMic } from 'react-mic';
 import { formatRelative } from 'date-fns'
 
@@ -28,7 +29,7 @@ const Attempt = ({ timestamp, blob, blobURL, remove }) => {
   );
 };
 
-export const Mimics = (props) => {
+export const Mimics = ({ sampleId }) => {
   const [loading, setLoading] = useState(false);
   const [recording, setRecording] = useState(false);
   const [lastTry, setLastTry] = useState(null);
@@ -36,7 +37,7 @@ export const Mimics = (props) => {
 
   useEffect(() => {
     setLoading(true);
-    api.loadMimics().then(mimics => {
+    api.loadMimics(sampleId).then(mimics => {
       setHistory(ms => [...ms, ...mimics]);
       setLoading(false);
     }, error => {
@@ -131,7 +132,7 @@ export const Mimics = (props) => {
   );
 }
 
-export const Preview = () => {
+export const Preview = ({ id }) => {
   const [sample, setSample] = useState(null);
   const setSampleWrapper = React.useCallback(newSample => {
     return setSample({
@@ -140,12 +141,15 @@ export const Preview = () => {
     })
   }, [setSample])
   useEffect(() => {
-    api.loadMedia().then(thing => {
+    api.loadOneMedia(id).then(thing => {
       if (thing) {
         setSampleWrapper(thing)
       }
     })
-  }, [setSampleWrapper])
+    return () => {
+      // TODO - revoke object URL
+    }
+  }, [id, setSampleWrapper])
 
   if (sample) {
     return (
@@ -156,35 +160,22 @@ export const Preview = () => {
     );
   }
 
-  const onInputChange = (event) => {
-    const file = event.target.files[0]; 
-    const toCommit = {
-      title: file.name || 'untitled',
-      description: 'TODO',
-      blob: file,
-    }
-    api.saveMedia(toCommit).then(id => {
-      setSampleWrapper({
-        ...toCommit,
-        id
-      });      
-    })
-  }
   return (
     <div>
-      <h2>Upload a File You Can Mimic</h2>
-      <input id="sample" name="sample" type="file" onChange={onInputChange} style={{ width: '180px' }} />
+      <h2>Sample Not Found! Probably got deleted</h2>
     </div>
   );
 }
 
 export const Practice = () => {
+  const match = useRouteMatch();
+  const { params: { id } } = match;
   return (
     <React.Fragment>
       <div style={{ padding: '2em' }}>
-        <Preview />
+        <Preview id={id} />
       </div>
-      <Mimics />
+      <Mimics sampleId={id} />
     </React.Fragment>
   );
 };
