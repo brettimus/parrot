@@ -81,7 +81,7 @@ export const Mimics = ({ sampleId }) => {
 
   return (
     <div>
-      <h2>Mimics</h2>
+      <h2><i class="fal fa-betamax"></i> Mimics</h2>
       <ReactMic
         record={recording}
         className="sound-wave"
@@ -132,7 +132,29 @@ export const Mimics = ({ sampleId }) => {
   );
 }
 
+const REWIND_EMOJI = '\u23EA' // rewind button
+const FORWARD_EMOJI = '\u23E9' // fast-forward button
+
 export const Preview = ({ id }) => {
+  // Video ref, and callbacks for modifying speed
+  const videoRef = React.useRef(null);
+  const [speed, setSpeed] = React.useState(1);
+  const speedUp = () => {
+    const video = videoRef.current;
+    if (video && video.playbackRate) {
+      video.playbackRate += .1;
+      setSpeed(video.playbackRate)
+    }
+  }
+  const slowDown = () => {
+    const video = videoRef.current;
+    if (video && video.playbackRate) {
+      video.playbackRate -= .1;
+      setSpeed(video.playbackRate)
+    }
+  }
+
+  // State management for the sample media
   const [sample, setSample] = useState(null);
   const setSampleWrapper = React.useCallback(newSample => {
     return setSample({
@@ -140,6 +162,8 @@ export const Preview = ({ id }) => {
       src: URL.createObjectURL(newSample.blob)
     })
   }, [setSample])
+
+  // Fetch media, create blob url
   useEffect(() => {
     api.loadOneMedia(id).then(thing => {
       if (thing) {
@@ -155,7 +179,17 @@ export const Preview = ({ id }) => {
     return (
       <div>
         <h2>Okay Try Mimicing This or Whatever</h2>
-        <audio controls src={sample.src} />
+        <video controls src={sample.src} ref={videoRef} />
+        <br/>
+        <button style={{ background: 'transparent', padding: '.2em .5em', borderRadius: '5px' }}onClick={slowDown}>
+          <span role="img" aria-label="turtle emoji">🐢</span>
+        </button>
+        {' '}
+        <span>Speed: {speed.toFixed(2)}x</span>
+        {' '}
+        <button style={{ background: 'transparent', padding: '.2em .5em', borderRadius: '5px' }}onClick={speedUp}>
+          <span role="img" aria-label="rabbit emoji">🐇</span>
+        </button>
       </div>
     );
   }

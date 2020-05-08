@@ -43,12 +43,10 @@ function App() {
 
 const AddSample = ({ handleCreated }) => {
   const history = useHistory();
-  // const location = useLocation();
 
   const goToCreated = (id) => {
     history.push('/practice/' + id);
   };
-
 
   const onInputChange = (event) => {
     const file = event.target.files[0]; 
@@ -67,8 +65,15 @@ const AddSample = ({ handleCreated }) => {
   }
   return (
     <div>
-      <p>Upload another file You Can Mimic</p>
-      <input id="sample" name="sample" type="file" onChange={onInputChange} style={{ width: '180px' }} />
+      <h2>Upload some stuff to mimic</h2>
+      <input
+        accept="audio/*,video/*"
+        id="sample"
+        name="sample"
+        type="file"
+        onChange={onInputChange}
+        style={{ width: '180px' }}
+      />
     </div>
   );
 }
@@ -84,16 +89,27 @@ function Home() {
   const addThing = (newlyCreated) => {
     setThings(ts => [newlyCreated, ...ts])
   }
+  const removeSample = id => {
+    setThings(ts => ts.filter(t => t.id !== id))
+    api.removeMedia(id)
+  }
+  if (!things.length) {
+    return <AddSample handleCreated={addThing} />;
+  }
   return (
     <nav>
+      <h1>Practice Some Squakin'</h1>
+      <ul>
       {things.map((thing, i) => {
         return (
-          <React.Fragment key={i}>          
+          <li key={i}>          
             <Link  className="App-link" to={"/practice/" + thing.id}>{thing.title}</Link>
-            { i < things.length - 1 ? ' | ' : ''}
-          </React.Fragment>
+            {' '}
+            <button onClick={() => removeSample(thing.id)}>x</button>
+          </li>
         );
       })}
+      </ul>
       <AddSample handleCreated={addThing} />
     </nav>
   );

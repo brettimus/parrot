@@ -31,6 +31,12 @@ export const saveMedia = ({ blob, title, description }) => {
   });
 }
 
+export const removeMedia = (id) => {
+  return db.transaction('rw', db.media, () => {
+    return db.media.where('id').equals(id).delete();
+  });
+}
+
 export const loadMimics = (mediaId) => new Promise((res, rej) => {
   db.transaction('r', db.mimics, async () => {
     const getAll = () => {
